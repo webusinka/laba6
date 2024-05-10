@@ -10,59 +10,70 @@ int findPivot(const vector<vector<double>>& matrix, int col, int start_row) {
     double max_val = 0.0;
     int pivot_row = start_row;
 
-    for (int i = start_row; i < matrix.size(); i++) {
-        if (fabs(matrix[i][col]) > max_val) {
+    for (int i = start_row; i < matrix.size(); i++) { //проходимся по текущей строке
+        if (fabs(matrix[i][col]) > max_val) {      //находим максимальный  по модулю элемент в столбце проходясь по всем строкам
             max_val = fabs(matrix[i][col]);
-            pivot_row = i;
+            pivot_row = i;                        //проходимся по строке
         }
     }
-    
-    return pivot_row;
+    return pivot_row + 1;              //возвращаем номер строки, начиная с 1
 }
 
 // Функция для решения системы линейных уравнений
-vector<double> solveLinearSystem(vector<vector<double>>& matrix) {
+vector<double> solveLinearSystem(const vector<vector<double>>& matrix) {
     int n = matrix.size();
     int m = matrix[0].size() - 1;
+    vector<vector<double>> working_matrix = matrix; //копия матрицы
 
     // Прямой ход
+    cout << "Прямой ход:" << endl;
     for (int col = 0; col < m; col++) {
-        int pivot_row = findPivot(matrix, col, col);
-        if (pivot_row != col) {
-            // Меняем местами строки, если необходимо
-            for (int i = 0; i < m; i++) {
-                double temp = matrix[col][i];
-                matrix[col][i] = matrix[pivot_row][i];
-                matrix[pivot_row][i] = temp;
+        int pivot_row = findPivot(working_matrix, col, col); //находим номер строки
+        double pivot_value = working_matrix[pivot_row - 1][col]; //находим главный элемент
+        cout << "Выбран главный элемент " << pivot_value << " в строке " << pivot_row << endl;
+
+        if (pivot_row != col + 1) {
+            //меняем местами строки, если необходимо, так как галвные на диагонали
+            swap(working_matrix[col], working_matrix[pivot_row - 1]); //используем индекс, начиная с 0
+            cout << "Меняем местами строки " << col + 1 << " и " << pivot_row << endl;
+        }
+
+        //элементарные преобразования для получения нулей под главным элементом
+        for (int i = col + 1; i < n; i++) {
+            double factor = working_matrix[i][col] / working_matrix[col][col];
+            cout << "Вычитаем из строки " << i + 1 << " " << factor << endl;
+
+            for (int j = col; j < m + 1; j++) {
+                working_matrix[i][j] -= factor * working_matrix[col][j];
             }
         }
 
-        // Элементарные преобразования для получения нулей под главным элементом
-        for (int i = col + 1; i < n; i++) {
-            double factor = matrix[i][col] / matrix[col][col];
-            for (int j = col; j < m + 1; j++) {
-                matrix[i][j] -= factor * matrix[col][j];
+        //выводим промежуточную матрицу
+        cout << "Промежуточная матрица после " << col + 1 << "-го столбца:" << endl;
+        for (const auto& row : working_matrix) {
+            for (double elem : row) {
+                cout << elem << " ";
             }
+            cout << endl;
         }
+        cout << endl;
     }
 
-    // Обратный ход
+    //обратный ход
+    cout << "Обратный ход:" << endl;
     vector<double> solution(m, 0.0);
     for (int i = n - 1; i >= 0; i--) {
         double sum = 0.0;
         for (int j = i + 1; j < m; j++) {
-            sum += matrix[i][j] * solution[j];
+            sum += working_matrix[i][j] * solution[j]; //начиная с последней строки, вычисляются значения по Крамеру
         }
-        solution[i] = (matrix[i][m] - sum) / matrix[i][i];
+        solution[i] = (working_matrix[i][m] - sum) / working_matrix[i][i];
+        cout << "x" << i + 1 << " = " << solution[i] << endl;
     }
 
+    cout << endl;
     return solution;
 }
-
-// -1.14(x1) - 0.04(x2) + 0.21(x3) - 18.0(x4) = -1.24
-//  0.25(x1) - 1.23(x2) - 0.17(x3) - 0.09(x4) = 0.95
-// -0.21(x1) - 0.17(x2) + 0.80(x3) - 0.13(x4) = 2.56
-//  0.15(x1) - 1.31(x2) + 0.06(x3) + 0.95(x4) = -1.14
 
 int main() {
     system("chcp 65001");
@@ -74,13 +85,15 @@ int main() {
         { 0.15, -1.31,  0.06,  0.95, -1.14}
     };
 
+    cout << "\tРешение СЛАУ с выбором главного элемента:\n" << endl;
     vector<double> solution = solveLinearSystem(matrix);
-
-    cout << "Решение системы линейных уравнений:" << endl;
+    cout << "Матрица решений СЛАУ: " << endl;
     for (double x : solution) {
         cout << x << " ";
     }
     cout << endl;
+
+    cout << "\n\tРешение СЛАУ методом трехточечной прогонки:" << endl;
 
     return 0;
 }
