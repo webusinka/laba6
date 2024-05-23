@@ -52,32 +52,62 @@ vector<double> solveLinearSystem(const vector<vector<double>>& matrix) {
         cout << "Промежуточная матрица после " << col + 1 << "-го столбца:" << endl;
         for (const auto& row : working_matrix) {
             for (double elem : row) {
-                cout << elem << " ";
+                if (fabs(elem) < 3e-17){
+                    cout << 0 << " ";
+                } else {
+                    cout << elem << " ";
+                }
             }
             cout << endl;
         }
         cout << endl;
     }
 
-    //обратный ход
-    cout << "Обратный ход:" << endl;
+    // Добавляем проверку сходимости
+    const int max_iterations = 15;
+    const double epsilon = 0.001;
+
+    vector<double> prev_solution(m, 0.0);
     vector<double> solution(m, 0.0);
-    for (int i = n - 1; i >= 0; i--) {
-        double sum = 0.0;
-        for (int j = i + 1; j < m; j++) {
-            sum += working_matrix[i][j] * solution[j]; //начиная с последней строки, вычисляются значения по Крамеру
+    for (int iter = 0; iter < max_iterations; iter++) {
+        prev_solution = solution;
+
+        // Обратный ход
+        cout << "Обратный ход (итерация " << iter + 1 << "):" << endl;
+        for (int i = n - 1; i >= 0; i--) {
+            double sum = 0.0;
+            for (int j = i + 1; j < m; j++) {
+                sum += working_matrix[i][j] * solution[j];
+            }
+            solution[i] = (working_matrix[i][m] - sum) / working_matrix[i][i];
+            cout << "x" << i + 1 << " = " << solution[i] << endl;
         }
-        solution[i] = (working_matrix[i][m] - sum) / working_matrix[i][i];
-        cout << "x" << i + 1 << " = " << solution[i] << endl;
+
+        // Проверка сходимости
+        bool converged = true;
+        for (int i = 0; i < m; i++) {
+            if (fabs(solution[i] - prev_solution[i]) > epsilon) {
+                converged = false;
+                break;
+            }
+        }
+
+        if (converged) {
+            cout << "\nРешение сошлось за " << iter + 1 << " итераций." << endl;
+            break;
+        }
+
+        if (iter == max_iterations - 1) {
+            cout << "\nРешение не сошлось за " << max_iterations << " итераций." << endl;
+        }
     }
 
-    cout << endl;
     return solution;
 }
 
 int main() {
     system("chcp 65001");
-    
+
     vector<vector<double>> matrix = {
         {-1.14, -0.04,  0.21, -18.0, -1.24},
         { 0.25, -1.23, -0.17, -0.09,  0.95},
@@ -92,8 +122,5 @@ int main() {
         cout << x << " ";
     }
     cout << endl;
-
-    cout << "\n\tРешение СЛАУ методом трехточечной прогонки:" << endl;
-
     return 0;
 }
