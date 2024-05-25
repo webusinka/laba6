@@ -303,13 +303,13 @@ vector<vector<unsigned char>> DECIPHER(vector<vector<unsigned char>>& BLOCK, vec
         v[j] = add_round_key(BLOCK[j], ROUND_KEYS[10]);
     }
 
-    // Циклический этап - InvShiftRows, InvSubBytes, InvMixColumns, AddRoundKey
+    // Циклический этап - InvShiftRows, InvSubBytes, AddRoundKey, InvMixColumns
     for (int i = 9; i >= 1; i--) {
         for (int j = 0; j <= 3; j++) {
             inv_shift_rows(v[j]);
             inv_sub_bytes(v[j]);
-            inv_mix_columns(v[j]);
             v[j] = add_round_key(v[j], ROUND_KEYS[i]);
+            inv_mix_columns(v[j]);
         }
     }
 
@@ -400,10 +400,11 @@ int main() {
             cout << endl;
         }
     }
+    
     cout << "\n----------------------------------------------\n";
 
     PREV = DEFOLT;
-    /*<vector<vector<unsigned char>>> DECRYPT;
+    vector<vector<vector<unsigned char>>> DECRYPT;
 
     for (int i = 0; i < ECRYPT.size(); ++i) {
         vector<vector<unsigned char>> res(4, vector<unsigned char>(4, 0));
@@ -418,9 +419,9 @@ int main() {
         }
         DECRYPT.push_back(res);
         PREV = TEK;
-    }*/
+    }
 
-    vector<vector<vector<unsigned char>>> DECRYPT;
+    vector<vector<vector<unsigned char>>> DECRYPT_1;
 
     for (int i = 0; i < ECRYPT.size(); ++i) {
         vector<vector<unsigned char>> res(4, vector<unsigned char>(4, 0));
@@ -433,7 +434,7 @@ int main() {
                 res[i][j] = TEK[i][j];
             }
         }
-        DECRYPT.push_back(res);
+        DECRYPT_1.push_back(res);
     }
 
     cout << "Message after decryption:\n" << endl;

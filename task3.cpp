@@ -11,7 +11,7 @@ int findPivot(const vector<vector<double>>& matrix, int col, int start_row) {
     int pivot_row = start_row;
 
     for (int i = start_row; i < matrix.size(); i++) { //проходимся по текущей строке
-        if (fabs(matrix[i][col]) > max_val) {      //находим максимальный  по модулю элемент в столбце проходясь по всем строкам
+        if (fabs(matrix[i][col]) > max_val) {      //находим максимальный по модулю элемент в столбце проходясь по всем строкам
             max_val = fabs(matrix[i][col]);
             pivot_row = i;                        //проходимся по строке
         }
