@@ -296,7 +296,12 @@ vector<vector<unsigned char>> CIPHER(vector<vector<unsigned char>>& BLOCK, vecto
 }
 
 vector<vector<unsigned char>> DECIPHER(vector<vector<unsigned char>>& BLOCK, vector<vector<unsigned char>>& ROUND_KEYS, vector<unsigned char> MASTER_KEY) {
+        // Расширение ключа
+    vector<vector<unsigned char>> round_keys(44, vector<unsigned char>(4));
+    key_expansion(MASTER_KEY, round_keys);    
+    
     vector<vector<unsigned char>> v(4, vector<unsigned char>(4, 0));
+
 
     // Первый этап - AddRoundKey с последним раундовым ключом
     for (int j = 0; j <= 3; j++) {
@@ -306,20 +311,20 @@ vector<vector<unsigned char>> DECIPHER(vector<vector<unsigned char>>& BLOCK, vec
     // Циклический этап - InvShiftRows, InvSubBytes, AddRoundKey, InvMixColumns
     for (int i = 9; i >= 1; i--) {
         for (int j = 0; j <= 3; j++) {
-            inv_shift_rows(v[j]);
-            inv_sub_bytes(v[j]);
             v[j] = add_round_key(v[j], ROUND_KEYS[i]);
             inv_mix_columns(v[j]);
+            inv_shift_rows(v[j]);
+            inv_sub_bytes(v[j]);
         }
     }
 
     // Последний этап - InvShiftRows, InvSubBytes, AddRoundKey
     for (int j = 0; j <= 3; j++) {
-        inv_shift_rows(v[j]);
-        inv_sub_bytes(v[j]);
+        v[j] = add_round_key(v[j], ROUND_KEYS[0]);
     }
     for (int j = 0; j <= 3; j++) {
-        v[j] = add_round_key(v[j], ROUND_KEYS[0]);
+        inv_shift_rows(v[j]);
+        inv_sub_bytes(v[j]);
     }
 
     return v;
